@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "cloudinary": "^2.0.0",
-    "express-async-handler": "^1.2.0",
-    "multer": "^2.0.1"
-  }
-}
