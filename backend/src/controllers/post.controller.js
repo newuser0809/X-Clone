@@ -107,3 +107,58 @@ export const createPost = asyncHandler(async (req, res) => {
   });
   res.status(201).json({ post });
 });
+
+export const likePost = asyncHandler(async (req, res) => {
+  const { userId } = getAuth(req);
+  const { postId } = req.params;
+
+  const user = await User.findOne({ clerkId: userId });
+  const post = await Post.findById(postId);
+  if (!user || !post) {
+    return res.status(404).json({ message: "User or Post not found" });
+  }
+  const isLiked = post.likes.includes(user._id);
+  if (isLiked) {
+    await Post.findByIdAndUpdate(postId, {
+      $pull: { likes: user._id },
+    });
+  } else {
+    await Post.findByIdAndUpdate(postId, {
+      $push: { likes: user._id },
+    });
+  }
+  if (post.user.toString() !== user._id.toString()) {
+    await Notification.create({
+      from: user._id,
+      to: post.user,
+      type: "like",
+      post: postId,
+    });
+  }
+  res.status(200).json({
+    message: isLiked ? "Post unliked successfully" : "Post liked successfully",
+  });
+});
+
+export const deletePost = asyncHandler(async (req, res) => {
+  const { userId } = getAuth(req);
+  const { postId } = req.params;
+
+  const user = await User.findOne({ clerkId: userId });
+  const post = await Post.findById(postId);
+
+  if (!user || !post) {
+    return res.status(404).json({ message: "User or Post not found" });
+  }
+
+  if (post.user.toString() !== user._id.toString()) {
+    return res
+      .status(403)
+      .json({ error: "You can only delete your own posts" });
+  }
+
+  await Comment.deleteMany({ post: postId });
+
+  await Post.findByIdAndDelete(postId);
+  res.status(200).json({ message: "Post deleted successfully" });
+});

@@ -1,9 +1,11 @@
 import express from "express";
 import {
   createPost,
+  deletePost,
   getPost,
   getPosts,
   getUserPosts,
+  likePost,
 } from "../controllers/post.controller";
 import { protectRoute } from "../middleware/auth.middleware";
 import upload from "../middleware/upload.middleware";
@@ -15,5 +17,7 @@ router.get("/:postId", getPost);
 router.get("/user/:username", getUserPosts);
 
 router.post("/", protectRoute, upload.single("image"), createPost);
+router.post("/:postId/like", protectRoute, likePost);
+router.post("/:postId/delete", protectRoute, deletePost);
 
 export default router;

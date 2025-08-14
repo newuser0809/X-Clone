@@ -15,7 +15,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRoutes);
-
+app.use((err, req, res, next) => {
+  console.error("Unhandled error", err);
+  res.status(500).json({ err: err.message || "Internal Server Error" });
+});
 const startServer = async () => {
   try {
     await connectDB();
